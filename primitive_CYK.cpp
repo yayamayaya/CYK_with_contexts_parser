@@ -9,7 +9,7 @@ using std::string;
 
 std::set<string> find_termninal(std::string str);
 
-std::set<string> combine_non_terminal(std::set<string> vf, std::set<string> vs);
+std::set<string> find_non_terminal(std::set<string> vf, std::set<string> vs);
 
 bool find_elem(const std::set<string>& elems, const string& str);
 
@@ -38,10 +38,10 @@ int main()
 
 std::set<string> find_termninal(std::string str)
 {
-    return combine_non_terminal(std::set({str}), std::set<string>({""}));
+    return find_non_terminal(std::set({str}), std::set<string>({""}));
 }
 
-std::set<string> combine_non_terminal(std::set<string> vf, std::set<string> vs)
+std::set<string> find_non_terminal(std::set<string> vf, std::set<string> vs)
 {
     std::set<string> non_terminals;
 
@@ -51,6 +51,8 @@ std::set<string> combine_non_terminal(std::set<string> vf, std::set<string> vs)
                 for (auto it : rule.second)
                     if (find_elem(vf, it.first) && find_elem(vs, it.second))
                         non_terminals.insert(rule.first);
+
+    //Добавляем проверку всех контекстов для правила, прежде чем делать insert
 
     return non_terminals;
 }
@@ -66,13 +68,15 @@ int cyk(const std::vector<string>& w)
 
     std::map<int, std::map<int, std::set<string>>> table{};
 
+    //Добавляем флаг состояния, оборачиваем в while
     for (size_t i = 0; i < l; i++)
     {
+        //Делаем append, не присваивание.
         table[i][i] = find_termninal(w[i]);
 
         for (int j = i; j >= 0; --j)
             for (size_t k = j; k < i; k++)
-                table[j][i].merge(combine_non_terminal(table[j][k], table[k + 1][i]));
+                table[j][i].merge(find_non_terminal(table[j][k], table[k + 1][i]));
     }
     
     print_table(table);

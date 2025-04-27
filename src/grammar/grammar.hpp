@@ -3,4 +3,6 @@
 
 using non_terminal_t = unsigned int;
 
+class grammar;
+
 #endif
