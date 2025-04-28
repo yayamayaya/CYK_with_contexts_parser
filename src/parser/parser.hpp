@@ -19,15 +19,43 @@ class parser
 {
     parsing_table _t;
 
-    parser(): _t() {}
+    grammar       _gr;
 
-    ~parser() {}
+    bool volatile keep_running;
+    
+    words_t string_to_words(const std::string& str);
 
-    words_t string_to_words(const std::string str);
+    ret_t   run_CYK(const words_t& w);
+
+    std::set<non_terminal_t> detect_terminal(const std::string& str, const index_t ind);
+
+    std::set<non_terminal_t> detect_non_terminal(const std::set<non_terminal_t>& values_f, const std::set<non_terminal_t>& values_s, const index_t ir, const index_t ic);
+
+    bool find_element(const std::set<non_terminal_t>& elems, const non_terminal_t val);
+
+    bool find_contexts(const std::vector<context_t>& contexts, const index_t index_row, const index_t index_col);
+
+    std::pair<index_t, index_t> detect_context_type(const Context_type type, const index_t ind_row, const index_t ind_col);
+
+    static constexpr int section_print_width = 20;
 
 public:
 
-    ret_t parse_string(const grammar& gr, const std::string str);
+    parser(): _t(), _gr(), keep_running(true) {}
+
+    ~parser() {}
+
+    enum Return_values
+    {
+        EMPTY_STRING = 1,  
+    };
+
+    ret_t parse_string(const std::string& str);
+
+    //Временно
+    void set_grammar(const grammar& gr);
+
+    void print_table();
 };
 
 #endif
