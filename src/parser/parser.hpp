@@ -19,13 +19,17 @@ class parser
 {
     parsing_table _t;
 
+    index_t       _table_size;
+
     grammar       _gr;
 
-    bool volatile keep_running;
+    bool volatile _keep_running;
     
     words_t string_to_words(const std::string& str);
 
     ret_t   run_CYK(const words_t& w);
+
+    bool insert_set_into_set(const std::set<non_terminal_t>& insert, std::set<non_terminal_t>& to);
 
     std::set<non_terminal_t> detect_terminal(const std::string& str, const index_t ind);
 
@@ -41,7 +45,7 @@ class parser
 
 public:
 
-    parser(): _t(), _gr(), keep_running(true) {}
+    parser(): _t(), _table_size(0), _gr(), _keep_running(true) {}
 
     ~parser() {}
 
