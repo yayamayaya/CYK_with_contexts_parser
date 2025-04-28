@@ -15,12 +15,12 @@ add_definitions(
 -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-usage=8192 -pie -fPIE -Werror=vla
 )
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
 
 project(context_parser)
 
-set(option COMPILE_TEST "compiling google tests" ON)
+option(COMPILE_TEST "compiling google tests" ON)
 
 if (COMPILE_TEST)
     
@@ -29,8 +29,7 @@ if (COMPILE_TEST)
     include_directories(${GTEST_INCLUDE_DIRS})
 
     add_subdirectory(tests)
-
 endif ()
 
-
+    
 add_subdirectory(src)
