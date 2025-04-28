@@ -1,6 +1,8 @@
 #include <iostream>
 #include <map>
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <set>
@@ -45,12 +47,10 @@ std::set<string> find_non_terminal(std::set<string> vf, std::set<string> vs)
 {
     std::set<string> non_terminals;
 
-    for (size_t i = 0; i < vf.size(); i++)
-        for (size_t j = 0; j < vs.size(); j++)
-            for (auto rule : rules)
-                for (auto it : rule.second)
-                    if (find_elem(vf, it.first) && find_elem(vs, it.second))
-                        non_terminals.insert(rule.first);
+    for (auto rule : rules)
+        for (auto it : rule.second)
+            if (find_elem(vf, it.first) && find_elem(vs, it.second))
+                non_terminals.insert(rule.first);
 
     //Добавляем проверку всех контекстов для правила, прежде чем делать insert
 
@@ -74,7 +74,7 @@ int cyk(const std::vector<string>& w)
         //Делаем append, не присваивание.
         table[i][i] = find_termninal(w[i]);
 
-        for (int j = i; j >= 0; --j)
+        for (size_t j = i; static_cast<int>(j) >= 0; --j)
             for (size_t k = j; k < i; k++)
                 table[j][i].merge(find_non_terminal(table[j][k], table[k + 1][i]));
     }
@@ -89,15 +89,18 @@ void print_table(const std::map<int, std::map<int, std::set<string>>>& table)
     for (auto row : table)
     {
         for (size_t i = 0; i < table.size() - row.second.size(); i++)
-            std::cout << " {} ";
+            std::cout << std::setw(20)<<  " { } ";
 
         for (auto col : row.second)
         {
+            std::stringstream os = {};
 
-            std::cout << "{ ";
+            os << "{ ";
             for (auto it : col.second)
-                std::cout << it << " ";
-            std::cout << "} ";
+                os << it << " ";
+            os << "} ";
+
+            std::cout << std::setw(20) << os.str();
         }
 
         std::cout << std::endl;
