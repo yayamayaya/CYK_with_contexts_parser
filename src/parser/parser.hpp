@@ -49,10 +49,9 @@ public:
 
     ~parser() {}
 
-    enum Return_values
-    {
-        EMPTY_STRING = 1,  
-    };
+    static constexpr ret_t EMPTY_STRING = 0x11;
+
+    static constexpr ret_t NOT_PARSED   = 0x12;
 
     ret_t parse_string(const std::string& str);
 

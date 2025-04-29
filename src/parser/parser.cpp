@@ -15,9 +15,6 @@ words_t parser::string_to_words(const std::string& str)
 
     while (ss >> buf)
         words.push_back(buf);
-
-    // for (auto i : words)
-        // std::cout << i << std::endl;
     
     return words;
 }
@@ -37,7 +34,7 @@ ret_t parser::parse_string(const std::string& str)
 
 ret_t parser::run_CYK(const words_t& w)
 {
-    _table_size = w.size();
+    _table_size = static_cast<index_t>(w.size());
 
     while (_keep_running)
         for (index_t j = 0; j < _table_size; j++)
@@ -53,9 +50,11 @@ ret_t parser::run_CYK(const words_t& w)
                         _keep_running = true;
         }
 
-    print_table();
+    if (_t[0][_table_size - 1].size())
+        return 0;
 
-    return 0;
+    std::cout << "Expression does not check with the grammar! Check your input" << std::endl;
+    return NOT_PARSED;
 }
 
 std::set<non_terminal_t> parser::detect_terminal(const std::string& str, const index_t ind)
@@ -98,24 +97,14 @@ bool parser::find_contexts(const std::vector<context_t>& contexts, const index_t
 {
     bool contexts_found = true;
 
-    // std::cout << "here ";
-
     for (auto cnt : contexts)
     {
-        std::cout << "here!\n";
-
-        std::cout << "Curr index: " << index_row << " " << index_col << std::endl;
-
         auto i = detect_context_type(cnt.first, index_row, index_col);
-
-        std::cout << "Context index: " << i.first << " " << i.second << std::endl;
 
         contexts_found &= find_element(_t[i.first][i.second], cnt.second);
         if (!contexts_found)
             return false;
     }
-
-    // std::cout << contexts_found << std::endl;
 
     return contexts_found;
 }
@@ -147,7 +136,8 @@ void parser::print_table()
 {
     for (auto row : _t)
     {
-        for (size_t i = 0; i < _t.size() - row.second.size(); i++)
+        //Исправить вывод
+        for (size_t i = 0; i < _table_size - row.second.size(); i++)
             std::cout << std::setw(section_print_width)<<  " { } ";
 
         for (auto col : row.second)
