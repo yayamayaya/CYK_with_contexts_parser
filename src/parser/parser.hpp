@@ -58,7 +58,9 @@ public:
     //Временно
     void set_grammar(const grammar& gr);
 
-    void print_table();
+    const std::string print_table();
+
+    void print_graph(const std::string& png_name);
 };
 
 #endif

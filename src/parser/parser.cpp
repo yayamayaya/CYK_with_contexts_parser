@@ -1,3 +1,4 @@
+#include "graph_print.hpp"
 #include "parser.hpp"
 #include <sstream>
 #include <algorithm>
@@ -89,7 +90,7 @@ bool parser::insert_set_into_set(const std::set<non_terminal_t>& insert, std::se
 
     for (auto it : insert)
         inserted |= to.insert(it).second; 
-
+    
     return inserted;
 }
 
@@ -99,11 +100,17 @@ bool parser::find_contexts(const std::vector<context_t>& contexts, const index_t
 
     for (auto cnt : contexts)
     {
-        auto i = detect_context_type(cnt.first, index_row, index_col);
-
-        contexts_found &= find_element(_t[i.first][i.second], cnt.second);
-        if (!contexts_found)
+        try
+        {            
+            auto i = detect_context_type(cnt.first, index_row, index_col);
+        
+            contexts_found &= find_element(_t[i.first][i.second], cnt.second);
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << e.what() << '\n';
             return false;
+        }
     }
 
     return contexts_found;
@@ -113,13 +120,23 @@ std::pair<index_t, index_t> parser::detect_context_type(const Context_type type,
 {
     switch (type)
     {
-    case LEFT:      return {0, ind_row - 1};
+    case LEFT:
+        
+        if (!ind_row)
+            throw std::logic_error("Attempt to find left context on first symbol was made.");
 
-    case EXT_LEFT:  return {0, ind_col - 1};
+        return {0, ind_row - 1};
+
+    case EXT_LEFT:  return {0, ind_col};
     
-    case RIGHT:     return {ind_row + 1, _table_size - 1};
+    case RIGHT:     
+    
+        if (ind_row + 1 == _table_size)
+            throw std::logic_error("Attempt to find right context on last symbol was made.");
 
-    case EXT_RIGHT: return {ind_col + 1, _table_size - 1};
+        return {ind_row + 1, _table_size - 1};
+
+    case EXT_RIGHT: return {ind_col, _table_size - 1};
 
     default:        break;
     }
@@ -132,31 +149,41 @@ bool parser::find_element(const std::set<non_terminal_t>& elems, const non_termi
     return std::find(elems.begin(), elems.end(), val) != elems.end();
 }
 
-void parser::print_table()
+const std::string parser::print_table()
 {
+    std::stringstream os = {};
+
     for (auto row : _t)
     {
-        //Исправить вывод
         for (size_t i = 0; i < _table_size - row.second.size(); i++)
-            std::cout << std::setw(section_print_width)<<  " { } ";
+            os << std::setw(section_print_width)<<  " { } ";
 
         for (auto col : row.second)
         {
-            std::stringstream os = {};
+            std::stringstream section = {};
 
-            os << "{ ";
+            section << "{ ";
             for (auto it : col.second)
-                os << it << " ";
-            os << "} ";
+                section << it << " ";
+            section << "} ";
 
-            std::cout << std::setw(section_print_width) << os.str();
+            os << std::setw(section_print_width) << section.str();
         }
 
-        std::cout << std::endl;
+        os << std::endl;
     }
+
+    return os.str();
 }
 
 void parser::set_grammar(const grammar& gr)
 {
     _gr = gr;   
+}
+
+void parser::print_graph(const std::string& png_loc)
+{
+    graph_printer::print_graph(_t);
+
+    graph_printer::dot_call(png_loc);
 }
