@@ -1,13 +1,15 @@
-add_library(context_parsing INTERFACE)
+add_library(graph_parser graph_parser.cpp graph_parser.hpp)
 
-target_link_libraries(context_parsing INTERFACE parser grammar)
+target_link_libraries(graph_parser PRIVATE parser grammar printer)
 
 target_include_directories(
-    context_parsing
-    INTERFACE
+    graph_parser
+    PRIVATE
     ./parser/
     ./grammar/
+    ./graph_printer/
 )
 
 add_subdirectory(parser)
 add_subdirectory(grammar)
+add_subdirectory(graph_printer)
