@@ -40,9 +40,16 @@ void print_grammar(const grammar& gr) {
 
 int main(){
     grammar gr;
-    gr.add_grammar("A -> B C < D >= E");
-    gr.add_grammar("C -> 'foo' > D");
-    gr.add_grammar("A -> B R < E");
+    try
+    {
+        gr.add_grammar("A -> B C");
+        gr.add_grammar("A -> 'a'");
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
 
     std::cout << "Грамматики успешно добавлены.\n";
     print_grammar(gr);
