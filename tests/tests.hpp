@@ -62,6 +62,8 @@ TEST(context_sensitive_grammar, simple_test1)
 
     p.set_grammar(g);
     EXPECT_EQ(p.parse_string("a b c a"), 0);
+
+    // std::cout << p.print_table() << std::endl;
 }
 
 TEST(context_sensitive_grammar, simple_test2)
@@ -82,6 +84,8 @@ TEST(context_sensitive_grammar, simple_test2)
 
     p.set_grammar(g);
     EXPECT_EQ(p.parse_string("a b"), 0);
+
+    // std::cout << p.print_table() << std::endl;
 }
 
 TEST(context_sensitive_grammar, simple_test3)
@@ -150,6 +154,73 @@ TEST(graph_print_test, only_test)
     p.set_grammar(g);
     EXPECT_EQ(p.parse_string("a b c a"), 0);
     EXPECT_NO_THROW(p.print_graph("./graph.png"));
+}
+
+TEST(grammar_reader_test, test1)
+{
+    grammar g = {};
+
+    EXPECT_NO_THROW(g.add_grammar("A -> B C"));
+    EXPECT_NO_THROW(g.add_grammar("A -> 'a'"));
+    EXPECT_NO_THROW(g.add_grammar("B -> F D < Z > X <= C >= V"));
+
+
+}
+
+TEST(grammar_reader_test, negative_test1)
+{
+    grammar g = {};
+
+    EXPECT_ANY_THROW(g.add_grammar(""));
+    EXPECT_ANY_THROW(g.add_grammar("A"));
+    EXPECT_ANY_THROW(g.add_grammar("A -> "));
+    EXPECT_ANY_THROW(g.add_grammar("A -> B C D"));
+}
+
+TEST(full_test, test1)
+{
+    // S -> AB
+    // A -> "a" > B
+    // B -> "b" < C
+    // C -> "a"
+
+    grammar g = {};
+
+    g.add_grammar("S -> A B");
+    g.add_grammar("A -> 'a' > B");
+    g.add_grammar("B -> 'b' < C");
+    g.add_grammar("C -> 'a'");
+
+    parser p = {};
+
+    p.set_grammar(g);
+    EXPECT_EQ(p.parse_string("a b"), 0);
+
+    // std::cout << p.print_table() << std::endl;
+}
+
+TEST(full_test, simple_test1)
+{
+    // S -> AS | SA | BC
+    // A -> "a"
+    // B -> "b" < A
+    // C -> "c" > A
+
+    grammar g = {};
+
+    g.add_grammar("S -> A S");
+    g.add_grammar("S -> S A");
+    g.add_grammar("S -> B C");
+    g.add_grammar("A -> 'a'");
+    g.add_grammar("B -> 'b' < A");
+    g.add_grammar("C -> 'c' > A");
+
+    parser p = {};
+
+    p.set_grammar(g);
+    EXPECT_EQ(p.parse_string("a b c a"), 0);
+
+    // std::cout << p.print_table() << std::endl;
 }
 
 #endif
