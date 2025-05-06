@@ -5,5 +5,5 @@ target_include_directories(
     printer
     PUBLIC
     ./../grammar/
-    ./../parser/
+    ./../
 )

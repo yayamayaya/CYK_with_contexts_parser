@@ -11,7 +11,7 @@ target_link_libraries(
 target_include_directories(
     tests
     PRIVATE
-    ./../src/parser/
+    ./../src/
     ./../src/grammar/
 )
 
