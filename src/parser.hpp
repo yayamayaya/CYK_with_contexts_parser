@@ -17,6 +17,16 @@ using words_t       = std::vector<std::string>;
 
 class parser
 {
+public:
+
+    static constexpr ret_t EMPTY_STRING     = 0x11;
+
+    static constexpr ret_t NOT_PARSED       = 0x12;
+
+    static constexpr ret_t GRAMMAR_ADD_ERR  = 0x13;
+
+private:
+    
     parsing_table _t;
 
     index_t       _table_size;
@@ -49,17 +59,19 @@ public:
 
     ~parser() {}
 
-    static constexpr ret_t EMPTY_STRING = 0x11;
+    //Задать уже существующую грамматику
+    void set_grammar(const grammar &gr);
 
-    static constexpr ret_t NOT_PARSED   = 0x12;
+    //Добавить правило к грамматике
+    ret_t add_grammar_rule(const std::string &rule);
 
+    //Запустить парсер
     ret_t parse_string(const std::string& str);
 
-    //Временно
-    void set_grammar(const grammar& gr);
-
+    //Напечатать табличку парсинга
     const std::string print_table();
 
+    //Напечатать граф
     void print_graph(const std::string& png_name);
 };
 

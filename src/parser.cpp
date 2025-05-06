@@ -176,14 +176,28 @@ const std::string parser::print_table()
     return os.str();
 }
 
-void parser::set_grammar(const grammar& gr)
-{
-    _gr = gr;   
-}
-
 void parser::print_graph(const std::string& png_loc)
 {
     graph_printer::print_graph(_t);
-
     graph_printer::dot_call(png_loc);
+}
+
+void parser::set_grammar(const grammar& gr)
+{
+    _gr = gr;
+}
+
+ret_t parser::add_grammar_rule(const std::string &rule)
+{
+    try
+    {
+        _gr.add_grammar(rule);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return GRAMMAR_ADD_ERR;
+    }
+
+    return 0;
 }
