@@ -22,6 +22,28 @@ TEST(context_free_tests, simple_test1)
     EXPECT_EQ(p.parse_string("b c"), 0);
 }
 
+TEST(context_free_tests, big_grammar_test)
+{
+    parser p = {};
+
+    p.add_grammar_rule("S -> NP VP");
+    p.add_grammar_rule("VP -> VP PP");
+    p.add_grammar_rule("VP -> V NP");
+    p.add_grammar_rule("VP -> 'eats'");
+    p.add_grammar_rule("PP -> P NP");
+    p.add_grammar_rule("NP -> Det N");
+    p.add_grammar_rule("NP -> 'she'");
+    p.add_grammar_rule("V -> 'eats'");
+    p.add_grammar_rule("P -> 'with'");
+    p.add_grammar_rule("N -> 'fish'");
+    p.add_grammar_rule("N -> 'fork'");
+    p.add_grammar_rule("Det -> 'a'");
+
+    EXPECT_EQ(p.parse_string("she eats a fish with a fork"), 0);
+
+    std::cout << p.print_table() << std::endl;
+}
+
 TEST(context_free_tests, negative_test1)
 {
     // A{0x01} -> BC
@@ -163,8 +185,7 @@ TEST(grammar_reader_test, test1)
     EXPECT_NO_THROW(g.add_grammar("A -> B C"));
     EXPECT_NO_THROW(g.add_grammar("A -> 'a'"));
     EXPECT_NO_THROW(g.add_grammar("B -> F D < Z > X <= C >= V"));
-
-
+    EXPECT_NO_THROW(g.add_grammar("A -> Np Vp"));
 }
 
 TEST(grammar_reader_test, negative_test1)
@@ -221,6 +242,33 @@ TEST(full_test, simple_test1)
     EXPECT_EQ(p.parse_string("a b c a"), 0);
 
     // std::cout << p.print_table() << std::endl;
+}
+
+TEST(full_test, big_grammar_test)
+{
+    parser p = {};
+
+    p.add_grammar_rule("S -> A MR");
+    p.add_grammar_rule("MR -> M C");
+    p.add_grammar_rule("M -> B <= L >= R");
+    p.add_grammar_rule("L -> AA LL");
+    p.add_grammar_rule("LL -> L BB");
+    p.add_grammar_rule("L -> AA BB");
+    p.add_grammar_rule("R -> BB RR");
+    p.add_grammar_rule("RR -> R CC");
+    p.add_grammar_rule("R -> BB CC");
+    p.add_grammar_rule("A -> A A");
+    p.add_grammar_rule("B -> B B");
+    p.add_grammar_rule("C -> C C");
+    p.add_grammar_rule("A -> 'a'");
+    p.add_grammar_rule("B -> 'b'");
+    p.add_grammar_rule("C -> 'c'");
+    p.add_grammar_rule("AA -> 'a'");
+    p.add_grammar_rule("BB -> 'b'");
+    p.add_grammar_rule("CC -> 'c'");
+
+    EXPECT_EQ(p.parse_string("a a b b c c"), 0);
+    std::cout << p.print_table() << std::endl;
 }
 
 #endif
