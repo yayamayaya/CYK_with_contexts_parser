@@ -18,16 +18,16 @@
    git clone https://github.com/yayamayaya/CYK_with_contexts_parser.git
    ```
 
-Подключите библиотеку-драйвер:
+Подключите библиотеку:
 ```C++
-#include "graph_parser.hpp"
+#include "parser.hpp"
 ```
 
-При сборке проекта используйте CMake и добавьте к цели библиотеку `graph_parser`, а также директорию `./src/` в качестве субдиректории.
+При сборке проекта используйте CMake и добавьте к цели библиотеку `parser`, а также директорию `./src/` в качестве субдиректории.
 
 Добавляйте правила грамматики по одному:
 ```C++
-    graph_parser p = {};
+    parser p = {};
 
     p.add_grammar_rule("S -> A S");
     p.add_grammar_rule("S -> 'a'");
@@ -45,12 +45,12 @@
 Если парсер отработал успешно, мы можем вывести результат двумя способами:
 1) Напечатать таблицу парсинга:
 ```C++
-    std::cout << p.print_parsing_table() << std::endl;
+    std::cout << p.print_table() << std::endl;
 ```
 
 2) Вывести граф в формате png:
 ```C++
-    p.draw_parsed_graph("./my_png.png");
+    p.print_graph("./my_png.png");
 ```
 
 Второй способ требует наличия `dot`.
