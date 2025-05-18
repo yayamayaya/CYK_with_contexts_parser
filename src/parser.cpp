@@ -1,5 +1,6 @@
 #include "graph_print.hpp"
 #include "parser.hpp"
+#include <unordered_map>
 #include <sstream>
 #include <algorithm>
 #include <sstream>
@@ -18,6 +19,42 @@ words_t parser::string_to_words(const std::string& str)
         words.push_back(buf);
     
     return words;
+}
+
+//stack for right contexts
+
+ret_t parser::parse_graph(const graph& g, const index_t lhs)
+{
+    for (index_t rhs = 0; rhs < g.at(lhs).size(); rhs++)
+    {
+        if (g.at(lhs).at(rhs) == no_connection)
+            continue;
+
+        _table_size++;
+
+        _keep_running = true;
+        while (_keep_running)
+            fill_table_col(_table_size - 1, std::string(1, g.at(lhs).at(rhs)));
+
+        if (_t[0][_table_size - 1].size())
+        {
+            std::cout << "Path found " << lhs << " -> " << rhs << std::endl;
+
+            parse_graph(g, rhs);
+        }
+
+        clear_col();
+    }
+
+    return 0;
+}
+
+void parser::clear_col()
+{
+    _table_size--;
+
+    for (index_t i = 0; i < _t.size(); i++)
+        _t[i][_table_size].clear();
 }
 
 ret_t parser::parse_string(const std::string& str)
@@ -39,23 +76,26 @@ ret_t parser::run_CYK(const words_t& w)
 
     while (_keep_running)
         for (index_t j = 0; j < _table_size; j++)
-        {
-            _keep_running = false;
-
-            if (insert_set_into_set(detect_terminal(w[j], j), _t[j][j]))
-                _keep_running = true;
-
-            for (index_t i = j; static_cast<int>(i) >= 0; i--)
-                for (index_t k = i; k < j; k++)
-                    if (insert_set_into_set(detect_non_terminal(_t[i][k], _t[k + 1][j], i, j), _t[i][j]))
-                        _keep_running = true;
-        }
+            fill_table_col(j, w[j]);
 
     if (_t[0][_table_size - 1].size())
         return 0;
 
     std::cout << "Expression does not check with the grammar! Check your input" << std::endl;
     return NOT_PARSED;
+}
+
+void parser::fill_table_col(const index_t j, const std::string& new_term)
+{
+    _keep_running = false;
+
+    if (insert_set_into_set(detect_terminal(new_term, j), _t[j][j]))
+        _keep_running = true;
+
+    for (index_t i = j; static_cast<int>(i) >= 0; i--)
+        for (index_t k = i; k < j; k++)
+            if (insert_set_into_set(detect_non_terminal(_t[i][k], _t[k + 1][j], i, j), _t[i][j]))
+                _keep_running = true;
 }
 
 std::set<non_terminal_t> parser::detect_terminal(const std::string& str, const index_t ind)
@@ -127,7 +167,13 @@ std::pair<index_t, index_t> parser::detect_context_type(const Context_type type,
 
         return {0, ind_row - 1};
 
-    case EXT_LEFT:  return {0, ind_col};
+    case EXT_LEFT:  
+    
+        std::cout << "> extended left search on " << ind_row << " " << ind_col << std::endl;
+
+        std::cout << "> extended left indexes on " << 0 << " " << ind_col << std::endl;
+
+        return {0, ind_col};
     
     case RIGHT:     
     
@@ -136,7 +182,13 @@ std::pair<index_t, index_t> parser::detect_context_type(const Context_type type,
 
         return {ind_row + 1, _table_size - 1};
 
-    case EXT_RIGHT: return {ind_col, _table_size - 1};
+    case EXT_RIGHT: 
+    
+        std::cout << "> extended right search on " << ind_row << " " << ind_col << std::endl;
+
+        std::cout << "> extended right indexes on " << ind_col << " " << _table_size - 1 << std::endl;
+
+        return {ind_col, _table_size - 1};
 
     default:        break;
     }
