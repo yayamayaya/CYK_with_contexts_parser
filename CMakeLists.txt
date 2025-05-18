@@ -20,7 +20,7 @@ add_definitions(
 
 project(context_parser)
 
-option(COMPILE_TEST "compiling google tests" ON)
+option(COMPILE_TEST "compiling google tests" OFF)
 
 if (COMPILE_TEST)
     
@@ -31,5 +31,10 @@ if (COMPILE_TEST)
     add_subdirectory(tests)
 endif ()
 
-    
+add_executable(t test.cpp)
+
+target_include_directories(t PRIVATE src)
+
+target_link_libraries(t PRIVATE parser)
+
 add_subdirectory(src)
