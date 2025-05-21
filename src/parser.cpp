@@ -24,8 +24,6 @@ words_t parser::string_to_words(const std::string& str)
 
 ret_t parser::parse_graph(const Graph& g, const index_t lhs)
 {
-    // std::cout << "Size: " << g.return_str_size(lhs) << std::endl;
-
     _current_path.push_back(lhs);
 
     for (index_t rhs = 0; rhs < g.return_str_size(lhs); rhs++)
@@ -33,7 +31,6 @@ ret_t parser::parse_graph(const Graph& g, const index_t lhs)
         if (g.get_edge_name(lhs, rhs) == std::string(1, no_connection))
             continue;
             
-        // std::cout << "At: " << lhs << std::endl;
         _table_size++;
 
         _keep_running = true;
@@ -42,18 +39,10 @@ ret_t parser::parse_graph(const Graph& g, const index_t lhs)
 
         parse_graph(g, rhs);
 
-        // std::cout << "Path found " << lhs << " -> " << rhs << std::endl;
         if (_t[0][_table_size - 1].size() && check_right_contexts())
+            print_path();
         
-        std::cout << "--------------\n";
-        print_path();
-        std::cout << "table:\n" << print_table() << std::endl;
-
         clear_col();
-    }
-
-    {
-
     }
 
     _current_path.erase(_current_path.end());
@@ -81,7 +70,7 @@ bool parser::check_right_contexts()
     for (auto it : _right_contexts)
     {
         index_t context_s = std::get<1>(it).first;
-        index_t context_c = std::get<1>(it).second;
+        index_t context_c = _table_size - 1;
 
         non_terminal_t context_non_term = std::get<2>(it);
         contexts_found &= find_element(_t[context_s][context_c], context_non_term);
@@ -151,10 +140,7 @@ std::set<non_terminal_t> parser::detect_terminal(const std::string& str, const i
         for (auto it : rule.second)
             if (it.first == str)
                 if (find_contexts(it.second, ind, ind))
-                {
-                    std::cout << "Rule " << rule.first << std::endl;   
                     non_terminals.insert(rule.first);
-                }
 
     return non_terminals;
 }
@@ -167,10 +153,7 @@ std::set<non_terminal_t> parser::detect_non_terminal(const std::set<non_terminal
         for (auto it : rule.second)
             if (find_element(values_f, it.first.first) && find_element(values_s, it.first.second))
                 if (find_contexts(it.second, ir, ic))
-                {
-                    std::cout << "Rule " << rule.first << std::endl;   
                     non_terminals.insert(rule.first);
-                }
 
     return non_terminals;
 }
@@ -198,13 +181,8 @@ bool parser::find_contexts(const std::vector<context_t>& contexts, const index_t
             if (cnt.first == LEFT || cnt.first == EXT_LEFT)
                 contexts_found &= find_element(_t[i.first][i.second], cnt.second);
 
-            if (cnt.first == RIGHT || cnt.second == EXT_RIGHT)
-            {
+            if (cnt.first == RIGHT || cnt.first == EXT_RIGHT)
                 _right_contexts.push_back({index_col, {i.first, i.second}, cnt.second});
-                return true;
-            }
-
-            std::cout << contexts_found << std::endl;
         }
         catch (const std::exception& e)
         {
@@ -229,24 +207,13 @@ std::pair<index_t, index_t> parser::detect_context_type(const Context_type type,
 
     case EXT_LEFT:  
     
-        std::cout << "> extended left search on " << ind_row << " " << ind_col << std::endl;
-
-        std::cout << "> extended left indexes on " << 0 << " " << ind_col << std::endl;
-
         return {0, ind_col};
     
     case RIGHT:     
-    
-        if (ind_row + 1 == _table_size)
-            throw std::logic_error("Attempt to find right context on last symbol was made.");
 
         return {ind_row + 1, _table_size - 1};
 
     case EXT_RIGHT: 
-    
-        std::cout << "> extended right search on " << ind_row << " " << ind_col << std::endl;
-
-        std::cout << "> extended right indexes on " << ind_col << " " << _table_size - 1 << std::endl;
 
         return {ind_col, _table_size - 1};
 
