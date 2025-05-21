@@ -11,6 +11,7 @@ class Graph {
         std::set<unsigned int> vertices;
     public:
         void add_edge(unsigned int u, unsigned int v, const std::string& name){
+            
             adjacency_map[u][v] = name;
             // adjacency_map[v][u] = name;
 
@@ -24,6 +25,7 @@ class Graph {
         }
 
         std::string get_edge_name(unsigned int u, unsigned int v) const{
+
             auto outer_it = adjacency_map.find(u);
             if (outer_it == adjacency_map.end()) return "0";
 
@@ -36,28 +38,33 @@ class Graph {
 
         void print_matrix() const{
 
-        std::vector<unsigned int> sorted_vertices(vertices.begin(), vertices.end());
-        std::sort(sorted_vertices.begin(), sorted_vertices.end());
+            std::vector<unsigned int> sorted_vertices(vertices.begin(), vertices.end());
+            std::sort(sorted_vertices.begin(), sorted_vertices.end());
 
-        // Вывод заголовков
-        std::cout << "    ";
-        for (unsigned int v : sorted_vertices) {
-            std::cout << v << "      ";
-        }
-        std::cout << std::endl;
-
-        // Вывод строк матрицы
-        for (unsigned int i : sorted_vertices) {
-            std::cout << i << "   ";
-            for (unsigned int j : sorted_vertices) {
-                std::string edge = get_edge_name(i, j);
-                std::cout << edge;
-                // Добавляем пробелы для выравнивания
-                size_t len = edge.length();
-                for (size_t k = len; k < 6; ++k) // 6 символов на ячейку
-                    std::cout << ' ';
+            // Вывод заголовков
+            std::cout << "    ";
+            for (unsigned int v : sorted_vertices) {
+                std::cout << v << "      ";
             }
             std::cout << std::endl;
+
+            // Вывод строк матрицы
+            for (unsigned int i : sorted_vertices){
+                std::cout << i << "   ";
+                for (unsigned int j : sorted_vertices){
+                    std::string edge = get_edge_name(i, j);
+                    std::cout << edge;
+                    // Добавляем пробелы для выравнивания
+                    size_t len = edge.length();
+                    for (size_t k = len; k < 6; ++k) // 6 символов на ячейку
+                        std::cout << ' ';
+                }
+                std::cout << std::endl;
+            }
         }
-    }
+
+        void clear_graph(){
+            adjacency_map.clear();
+            vertices.clear();
+        }
 };
