@@ -4,6 +4,7 @@ target_include_directories(
     parser
     PUBLIC
     ./grammar/
+    ./graph/
 )
 
 target_include_directories(

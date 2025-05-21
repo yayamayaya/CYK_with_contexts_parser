@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <tuple>
 
 words_t parser::string_to_words(const std::string& str)
 {
@@ -21,32 +22,72 @@ words_t parser::string_to_words(const std::string& str)
     return words;
 }
 
-//stack for right contexts
-
-ret_t parser::parse_graph(const graph& g, const index_t lhs)
+ret_t parser::parse_graph(const Graph& g, const index_t lhs)
 {
-    for (index_t rhs = 0; rhs < g.at(lhs).size(); rhs++)
-    {
-        if (g.at(lhs).at(rhs) == no_connection)
-            continue;
+    // std::cout << "Size: " << g.return_str_size(lhs) << std::endl;
 
+    _current_path.push_back(lhs);
+
+    for (index_t rhs = 0; rhs < g.return_str_size(lhs); rhs++)
+    {            
+        if (g.get_edge_name(lhs, rhs) == std::string(1, no_connection))
+            continue;
+            
+        // std::cout << "At: " << lhs << std::endl;
         _table_size++;
 
         _keep_running = true;
         while (_keep_running)
-            fill_table_col(_table_size - 1, std::string(1, g.at(lhs).at(rhs)));
+            fill_table_col(_table_size - 1, g.get_edge_name(lhs, rhs));
 
-        if (_t[0][_table_size - 1].size())
-        {
-            std::cout << "Path found " << lhs << " -> " << rhs << std::endl;
+        parse_graph(g, rhs);
 
-            parse_graph(g, rhs);
-        }
+        // std::cout << "Path found " << lhs << " -> " << rhs << std::endl;
+        if (_t[0][_table_size - 1].size() && check_right_contexts())
+        
+        std::cout << "--------------\n";
+        print_path();
+        std::cout << "table:\n" << print_table() << std::endl;
 
         clear_col();
     }
 
+    {
+
+    }
+
+    _current_path.erase(_current_path.end());
+
     return 0;
+}
+
+void parser::print_path()
+{
+    std::cout << "Path: ";
+    for (size_t i = 0; i < _current_path.size(); i++)
+    {
+        std::cout << _current_path[i];
+        if (i < _current_path.size() - 1)
+            std::cout << " -> ";
+        else
+            std::cout << std::endl;
+    }
+}
+
+bool parser::check_right_contexts()
+{
+    bool contexts_found = true;
+
+    for (auto it : _right_contexts)
+    {
+        index_t context_s = std::get<1>(it).first;
+        index_t context_c = std::get<1>(it).second;
+
+        non_terminal_t context_non_term = std::get<2>(it);
+        contexts_found &= find_element(_t[context_s][context_c], context_non_term);
+    }
+
+    return contexts_found;
 }
 
 void parser::clear_col()
@@ -55,6 +96,10 @@ void parser::clear_col()
 
     for (index_t i = 0; i < _t.size(); i++)
         _t[i][_table_size].clear();
+
+    for (index_t i = 0; i < _right_contexts.size(); i++)
+        if (std::get<0>(_right_contexts[i]) == _table_size)
+            _right_contexts.erase(std::next(_right_contexts.begin(), i));
 }
 
 ret_t parser::parse_string(const std::string& str)
@@ -78,7 +123,7 @@ ret_t parser::run_CYK(const words_t& w)
         for (index_t j = 0; j < _table_size; j++)
             fill_table_col(j, w[j]);
 
-    if (_t[0][_table_size - 1].size())
+    if (_t[0][_table_size - 1].size() && check_right_contexts())
         return 0;
 
     std::cout << "Expression does not check with the grammar! Check your input" << std::endl;
@@ -106,7 +151,10 @@ std::set<non_terminal_t> parser::detect_terminal(const std::string& str, const i
         for (auto it : rule.second)
             if (it.first == str)
                 if (find_contexts(it.second, ind, ind))
+                {
+                    std::cout << "Rule " << rule.first << std::endl;   
                     non_terminals.insert(rule.first);
+                }
 
     return non_terminals;
 }
@@ -119,7 +167,10 @@ std::set<non_terminal_t> parser::detect_non_terminal(const std::set<non_terminal
         for (auto it : rule.second)
             if (find_element(values_f, it.first.first) && find_element(values_s, it.first.second))
                 if (find_contexts(it.second, ir, ic))
+                {
+                    std::cout << "Rule " << rule.first << std::endl;   
                     non_terminals.insert(rule.first);
+                }
 
     return non_terminals;
 }
@@ -143,8 +194,17 @@ bool parser::find_contexts(const std::vector<context_t>& contexts, const index_t
         try
         {            
             auto i = detect_context_type(cnt.first, index_row, index_col);
-        
-            contexts_found &= find_element(_t[i.first][i.second], cnt.second);
+
+            if (cnt.first == LEFT || cnt.first == EXT_LEFT)
+                contexts_found &= find_element(_t[i.first][i.second], cnt.second);
+
+            if (cnt.first == RIGHT || cnt.second == EXT_RIGHT)
+            {
+                _right_contexts.push_back({index_col, {i.first, i.second}, cnt.second});
+                return true;
+            }
+
+            std::cout << contexts_found << std::endl;
         }
         catch (const std::exception& e)
         {

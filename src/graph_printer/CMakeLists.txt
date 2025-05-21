@@ -6,4 +6,5 @@ target_include_directories(
     PUBLIC
     ./../grammar/
     ./../
+    ./../graph/
 )
